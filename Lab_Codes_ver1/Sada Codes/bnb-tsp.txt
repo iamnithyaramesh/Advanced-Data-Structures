@@ -1,0 +1,120 @@
+import math
+maximumsize = float('inf')
+
+def copyToFinal(curr_path):
+	final_path[:no_of_vertices + 1] = curr_path[:]
+	final_path[no_of_vertices] = curr_path[0]
+
+def firstMinval(adj, i):
+	min = maximumsize
+	for k in range(no_of_vertices):
+		if adj[i][k] < min and i != k:
+			min = adj[i][k]
+
+	return min
+
+def secondMin(adj, i):
+	first, second = maximumsize, maximumsize
+	for j in range(no_of_vertices):
+		if i == j:
+			continue
+		if adj[i][j] <= first:
+			second = first
+			first = adj[i][j]
+
+		elif(adj[i][j] <= second and
+			adj[i][j] != first):
+			second = adj[i][j]
+
+	return second
+
+
+def TSPRec(adj, curr_bound, curr_weight,
+			level, curr_path, visited):
+	global final_res
+	
+	if level == no_of_vertices:
+		
+
+		if adj[curr_path[level - 1]][curr_path[0]] != 0:
+			
+
+			curr_res = curr_weight + adj[curr_path[level - 1]]\
+										[curr_path[0]]
+			if curr_res < final_res:
+				copyToFinal(curr_path)
+				final_res = curr_res
+		return
+
+	for i in range(no_of_vertices):
+		
+		if (adj[curr_path[level-1]][i] != 0 and
+							visited[i] == False):
+			temp = curr_bound
+			curr_weight += adj[curr_path[level - 1]][i]
+
+			if level == 1:
+				curr_bound -= ((firstMinval(adj, curr_path[level - 1]) +
+								firstMinval(adj, i)) / 2)
+			else:
+				curr_bound -= ((secondMin(adj, curr_path[level - 1]) +
+								firstMinval(adj, i)) / 2)
+
+
+			if curr_bound + curr_weight < final_res:
+				curr_path[level] = i
+				visited[i] = True
+
+				TSPRec(adj, curr_bound, curr_weight,
+					level + 1, curr_path, visited)
+
+			curr_weight -= adj[curr_path[level - 1]][i]
+			curr_bound = temp
+
+			visited = [False] * len(visited)
+			for j in range(level):
+				if curr_path[j] != -1:
+					visited[curr_path[j]] = True
+
+ 
+def TSP(adj):
+	
+	curr_bound = 0
+	curr_path = [-1] * (no_of_vertices + 1)
+	visited = [False] * no_of_vertices
+
+	for i in range(no_of_vertices):
+		curr_bound += (firstMinval(adj, i) +
+					secondMin(adj, i))
+
+	curr_bound = math.ceil(curr_bound / 2)
+
+	visited[0] = True
+	curr_path[0] = 0
+
+	TSPRec(adj, curr_bound, 0, 1, curr_path, visited)
+
+
+
+
+
+# my trial
+
+adj = [[0, 10, 11, 20],
+	[10, 0, 35, 25],
+	[12, 25, 0, 30],
+	[20, 15, 30, 0]]
+no_of_vertices= 4
+
+final_path = [None] * (no_of_vertices + 1)
+
+visited = [False] * no_of_vertices
+
+final_res = maximumsize
+
+TSP(adj)
+
+print("Minimum cost for the path:", final_res)
+print("Path Taken by the salesman: ", end = ' ')
+for i in range(no_of_vertices + 1):
+	print(final_path[i], end = ' ')
